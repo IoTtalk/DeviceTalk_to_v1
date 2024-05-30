@@ -1,0 +1,338 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>DeviceTalk</title>
+        
+        <!-- DeviceTalk -->
+        <script src="{% static 'js/device-talk-app.js' %}"></script>
+        <script src="{% static 'js/func_mgr.js' %}"></script>
+        <script src="{% static 'js/utils.js' %}"></script>
+        <script src="{% static 'js/progress_bar.js' %}"></script>
+        <link href="{% static 'css/device-talk.css' %}" rel="stylesheet" />
+        
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+
+        <!-- Code Mirror -->
+        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.css">
+        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/clike/clike.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/python/python.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/javascript/javascript.js"></script>
+
+        <!-- Code Mirror self-define Themes -->
+        <link href="{% static 'css/func_mgr_theme.css' %}" rel="stylesheet" />
+        <link href="{% static 'css/ro_theme.css' %}" rel="stylesheet" />
+    </head>
+    
+    <body onload="init();">
+        {% csrf_token %}
+        {% verbatim %}
+        
+        <div class="main-container" id="all-ctx">
+            <!-- modal lib -->
+            <div class="modal-container" v-if="lib_state.show">
+                <div class="modal-inner">
+                    <div class="modal-title">
+                    <h2>Library Selection</h2>
+                    </div>
+                    <hr />
+                    <input id="upload-api" type="file" v-on:change="upload_file_onchange($event)" webkitdirectory directory multiple style="display:none; visibility:hidden;" />
+                    <div class="modal-content">
+                        <table><tbody>
+                            <tr class="lib-title">
+                                <td class="lib-title-flex"><h4>Library List</h4> <button type="button" @click="upload_api_click();">Upload Library</button></td>
+                                <td><h4>Selected Libraries</h4></td>
+                            </tr>
+                            <tr class="lib-box">
+                                <td class="lib-title" rowspan=3><div class="lib-container">
+                                    
+                                    <div v-for="(lib_name, index) in lib_state.libs" class="lib-inner">
+                                        <input type="checkbox" :value="lib_name.id" v-model="lib_state.checked" @change="check_lib_dependency(index)">
+                                        <label>{{ lib_name.name }}</label>
+                                    </div>
+                                </div></td>
+                                <td class="lib-title"><div class="lib-container">
+                                    <div v-for="(lib) in lib_state.checked" class="lib-inner">
+                                        <button class="delete" @click="remove_lib(lib)">X</button><span>{{ get_lib_object_by_id(lib).name }}</span>
+                                    </div>
+                                </div></td>
+                            </tr>
+                            <tr>
+                                <td class="lib-title"><div>
+                                    <h4>Selected Functions</h4> 
+                                </div></td>
+                            </tr>
+                            <tr class="lib-box">
+                                <td class="lib-title"><div class="lib-container">
+                                    <div class="lib-inner" v-for="(lib) in get_sorted_checked_libs()">
+                                        <div style="display: flex;"><button class="delete" @click="remove_lib(lib.id)">X</button><h4 style="margin: 0px;">{{ lib.name }}</h4></div>
+                                        <p v-for="func in lib.functions" class="small-font">{{ func }}</p>
+                                    </div>
+                                </div></td>
+                            </tr>
+                        </tbody></table>
+                    </div>
+                    <div>
+                        <pre class="lib-bottom-info-text">{{ lib_state.bottom_info_text }}</pre>
+                    </div>
+                    <div class="modal-button">
+                        <button class="save"  @click="save_lib_popup_click();">Save</button>
+                        <button class="cancel"  @click="cancel_lib_popup_click();">Cancel</button>
+                    </div>
+                </div>
+            </div> <!-- end modal lib-->
+            
+            <!-- modal file upload-->
+            <div class="modal-container" v-if="file_upload_state.show">
+              <div class="modal-inner">
+                <h3>Files Upload</h3>
+                <table>
+                  <tr v-for="(value, relativ_path) in file_upload_state.files">
+                      <td>{{ relativ_path }}</td>
+                      <td><progress-bar
+                            endpoint_prefix="../../../api/file/"
+                            :ref="'file-'+value.index"
+                            :file="value.file"
+                            :index="value.index"
+                            :uuid="value.uuid"
+                            @upload_completed="upload_next"
+                            @upload_fail="upload_fail">
+                          </progress-bar>
+                      </td>
+                  </tr>
+                </table>
+              </div>
+            </div> <!-- modal end-->
+            
+          <!-- modal -->
+          <div class="modal-container" v-show="manual_state.show">
+            <div class="modal-inner" style="overflow-y: hidden; overflow-x: hidden;">
+                <div class="modal-title">
+                  <div style="visibility: hidden;"><button>Close</button></div>
+                  <div><h2>SA Code Installation Guide</h2></div>
+                  <div><button v-on:click="manual_state.show = false;">Close</button></div>
+                </div>
+                <hr />
+                <iframe class="modal-content" :src="manual_state.src"></iframe>
+            </div>
+          </div> <!-- end modal file upload-->
+            
+          <!-- modal func-manager -->
+          <div class="modal-container" v-show="fm_state.show">
+            <div class="modal-inner">
+                <div class="modal-title">
+                  <div style="visibility: hidden;"><button>Close</button></div>
+                  <div><h3>{{ fm_state.DF_name }} Function Manager</h3></div>
+                  <div><button v-on:click="fm_state.show = false;">Close</button></div>
+                </div>
+                <hr />
+                <div class="fm-function-list">
+                  <div>
+                    <p>Library Function List</p>
+                    <select size=5 style="overflow: auto;" v-model="fm_state.lib_func_selected" @change="lib_function_change()">
+                        <optgroup v-for="lib in fm_state.lib_funcs" :label="lib.name" v-show="!lib.hidden">
+                          <option v-for="func in lib.functions" :value='func.id' v-show="!func.isref">{{ func.name }}</option>
+                        </optgroup>
+                    </select>
+                  </div>
+                  <div class="fm-arrow">
+                    <button v-on:click="lib_func_import_click()" :disabled="!(fm_state.state_flag == 'lib_function')">&gt&gt&gt</button>
+                  </div>
+                  <div>
+                    <p>SA Function List</p>
+                    <select size=5 style="overflow: auto;" v-model="fm_state.sa_func_selected" @change="sa_function_change()">
+                      <option v-for="func in fm_state.sa_funcs" :value='func.id'>{{ func.name }}</option>
+                    </select>
+                  </div>
+                </div>
+                <hr />
+                <div class="fm-function-name">
+                  <div>
+                    Function Name : <input v-model="fm_state.func_name" :disabled="fm_state.state_flag == 'lib_function'"/>
+                  </div>
+                  <div>
+                    <button v-on:click="func_save_click()" :disabled="fm_state.state_flag == 'lib_function' || fm_state.state_flag == 'init'">Save</button>
+                    <button v-on:click="func_delete_click()" :disabled="!(fm_state.state_flag == 'edit_function')">Delete</button>
+                  </div>
+                </div>
+                <p class="cm-title">Global Variables</p>
+                <div class="cm-global-variable">
+                  <textarea id="code-global-variable-setup"></textarea>
+                </div>
+                <p class="cm-title">{{ fm_state.DF_name }} Variables</p>
+                <div class="cm-variable">
+                  <textarea id="code-variable-setup"></textarea>
+                </div>
+                <p class="cm-title"> </p>
+                <p class="cm-title">{{ fm_state.DF_name }} Code</p>
+                <div class="cm-code-editor">
+                  <textarea id="code"></textarea>
+                </div>
+            </div>
+          </div><!-- end modal func-manager-->
+            
+          <nav id="nav-ctx">
+            <div class="nav-container">
+              <div class="nav-inner">
+                <div v-if="SA_state.device_name==''"><h1>DeviceTalk : {{ SA_state.dm_name }} (NIL)</h1></div>
+                <div v-else><h1>DeviceTalk : {{ SA_state.dm_name }} ({{ SA_state.device_name }})</h1></div>
+              </div>
+            </div>
+          </nav>
+
+          <div class="main-container" id="sada-ctx">
+            <div class="main-inner">
+              <!-- sa/da setting -->
+              <div class="tab-container">
+                <div class="tab-inner">
+                  <div class="tab-item" 
+                    v-bind:class="[tab_state=='SA' ? 'tab-active' : 'tab-noactive']" v-on:click="tab_click('SA');">
+                      <h3>SA</h3>
+                  </div>
+                  <div class="tab-item" 
+                    v-bind:class="[tab_state=='DA' ? 'tab-active' : 'tab-noactive']" v-on:click="tab_click('DA');">
+                      <h3>DA</h3>
+                  </div>
+                </div>
+                <div class="tab-ctx" v-show="tab_state=='SA'">
+                  <div class="table-wrapper">
+                    <table>
+                      <tr>
+                        <td>Device Name</td>
+                        <td>
+                            <select id="device-name" @change="update_device_name">
+                                <option style="display:none;" value="" >Please Select..</option>
+                                <option value=-1 >Add new device</option>
+                                <option v-show="SA_state.is_new_device" style="color=green" value=-2>{{SA_state.device_name}}</option>
+                                <option v-for="(d_name) in SA_state.device_name_list" :value="d_name">{{d_name}}</option>
+                            </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Language</td>
+                        <td>
+                          <select v-model="SA_state.language" v-on:change="language_change()" 
+                              :disabled="gui_enable_flag">
+                                <option style="display:none;" value="none" >Please select</option>
+                                <option v-for="(language) in SA_state.languages" :value='language'>{{ language }}</option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr style="display: none;">
+                        <td>Platform</td>
+                        <td>
+                          <select v-model="SA_state.basic_file" v-on:change="basic_file_change()" 
+                              :disabled="gui_enable_flag">
+                                <option style="display:none;" value="none" >Please select</option>
+                                <option v-for="(basic_file) in SA_state.basic_files" :value='basic_file.id'>{{ basic_file.name }}</option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td></td>
+                        <td>
+                            <button v-on:click="lib_select_click()"
+                              :disabled="gui_enable_flag">Library Selection</button>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div v-show="check_gvsm_shown()">
+                      <h3 class="table-title">Global Variables</h3>
+                      <div class="table-wrapper">
+                          <div class="cm-global-variable-main">
+                            <textarea id="code-global-variable-setup-main" :disabled="gui_enable_flag"></textarea>
+                          </div>
+                      </div>
+                  </div>
+                  <h3 class="table-title">Function Selection</h3>
+                  <div class="table-wrapper border">
+                    <table class="sa">
+                      <tr v-if="SA_state.IDFs.length" class="sa-title table-divider-bottom">
+                        <td>IDF</td>
+                        <td></td>
+                      </tr>
+                      <tr v-for="(IDF) in SA_state.IDFs" class="dfs">
+                        <td>{{ IDF.name }}</td>
+                        <td>
+                          <select v-on:change="func_select_change($event, IDF, 'idf', IDF.params)"
+                            v-model="IDF.selected" :disabled="gui_enable_flag">
+                                <option value="-1" hidden>Add new function</option>
+                                <option value="-2">Add new function</option>
+                                <option value="-3" hidden>{{ IDF.selected_name }}</option>
+                                <option v-for="func in IDF.function_list" :value='func.ref.id'>{{ func.ref.name }}</option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr v-if="SA_state.ODFs.length" class="sa-title table-divider-bottom"
+                          v-bind:class="[SA_state.IDFs.length ? 'table-divider-top' : '']">
+                            <td>ODF</td>
+                            <td></td>
+                      </tr>
+                      <tr v-for="(ODF) in SA_state.ODFs" class="dfs">
+                        <td>{{ ODF.name }}</td>
+                        <td>
+                          <select v-on:change="func_select_change($event, ODF, 'odf', ODF.params)"
+                            v-model="ODF.selected" :disabled="gui_enable_flag">
+                                <option value="-1" hidden>Add new function</option>
+                                <option value="-2">Add new function</option>
+                                <option value="-3" hidden>{{ ODF.selected_name }}</option>
+                                <option v-for="func in ODF.function_list" :value='func.ref.id'>{{ func.ref.name }}</option>
+                          </select>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="tab-ctx" v-show="tab_state=='DA'">
+                  <div class="table-wrapper border">
+                    <table class="da">
+                      <tr>
+                        <td>IoTtalk Server</td>
+                        <td> <input v-model="DA_state.iottalk_server" :disabled="gui_enable_flag"/> </td>
+                      </tr>
+                      <tr>
+                        <td>Device Address</td>
+                        <td>
+                            <p>{{ DA_state.device_addr }}</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Push Interval (seconds)</td>
+                        <td>
+                            <input type="number" v-model="DA_state.push_interval"
+                                :disabled="gui_enable_flag"/>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+                <button v-on:click="download_sa_code_click()"
+                    :disabled="gui_enable_flag">
+                        Download SA Code
+                </button>
+		<!--		path('', .as_view(), name='home'), -->
+
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endverbatim %}
+        <div style="height: 30px"></div>
+    </body>
+    <script>
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const username = '{{ username }}';
+        const p_id = {{ p_id }};
+        const do_id = {{ do_id }};
+        const dm_result = {{ dm_result|safe }};
+        const languages = {{ languages|safe }};
+        const device_name_list = {{ device_name_list|safe }};
+        const DA_state_default = {{ DA_state_default|safe }};
+    </script>
+</html>

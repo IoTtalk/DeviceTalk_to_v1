@@ -1,0 +1,26 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>Error</title>
+      
+      <link href="{% static 'css/device-talk.css' %}" rel="stylesheet" />
+      
+    </head>
+      <nav id="nav-ctx">
+        <div class="nav-container">
+          <div class="nav-inner">
+            <div><h1>Status Code : {{ status_code }}</h1></div>
+          </div>
+        </div>
+      </nav>
+      <div class="main-container">
+          <div class="main-inner">
+            <div class="tab-ctx">
+                <h3>{{ error_reason }}</h3>
+            </div>
+          </div>
+      </div>
+</html>

@@ -1,0 +1,16 @@
+.cm-s-ro {height:100%;}
+.cm-s-ro .cm-header {color: blue;}
+.cm-s-ro .cm-quote {color: #090;}
+.cm-negative {color: #d44;}
+.cm-positive {color: #292;}
+.cm-header, .cm-strong {font-weight: bold;}
+.cm-em {font-style: italic;}
+.cm-link {text-decoration: underline;}
+.cm-strikethrough {text-decoration: line-through;}
+
+.cm-s-ro *[class^='cm-'] {color: #999999;}
+.cm-s-ro {color: #999999;}
+.cm-invalidchar {color: #f00;}
+
+//.cm-s-ro .cm-readonly span {color: #999999; font-weight:bold;}
+.cm-bookmark span {color: #999999;}

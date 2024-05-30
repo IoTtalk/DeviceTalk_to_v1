@@ -1,0 +1,6 @@
+[submodule "DeviceTalk-Basic-file"]
+	path = DeviceTalk-Basic-file
+	url = https://github.com/IoTtalk/DeviceTalk-Basic-file.git
+[submodule "DeviceTalk-Library-file"]
+	path = DeviceTalk-Library-file
+	url = https://github.com/IoTtalk/DeviceTalk-Library-file.git

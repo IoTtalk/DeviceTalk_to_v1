@@ -1,0 +1,14 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  devicetalk:
+    image: devicetalk:${USER}
+    build: .
+    restart: always
+    ports:
+      - "${HOST_PORT}:${INTERNAL_PORT}"
+    volumes:
+      - ${DJANGO_ENV_PATH}:/devicetalk/_/env/.env
+      - ${DATA_PATH}:/devicetalk/datas
+    command: sh -c "python manage.py migrate && python manage.py run${DJANGO_SSL}server 0.0.0.0:${INTERNAL_PORT}"

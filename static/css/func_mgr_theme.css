@@ -1,0 +1,45 @@
+.cm-s-func_mgr {height:100%;}
+.cm-s-func_mgr .cm-header {color: blue;}
+.cm-s-func_mgr .cm-quote {color: #090;}
+.cm-negative {color: #d44;}
+.cm-positive {color: #292;}
+.cm-header, .cm-strong {font-weight: bold;}
+.cm-em {font-style: italic;}
+.cm-link {text-decoration: underline;}
+.cm-strikethrough {text-decoration: line-through;}
+
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-def {color: #f0f;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-keyword {color: #00d;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-atom {color: #219;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-number {color: #184;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-variable,
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-punctuation,
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-property,
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-operator {}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-variable-2 {color: #05c;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-variable-3,
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-type {color: #085;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-comment {color: purple;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-string {color: #0a6;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-string-2 {color: #f50;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-meta {color: #000;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-qualifier {color: #000;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-builtin {color: #30a;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-bracket {color: #995;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-tag {color: #170;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-attribute {color: #00c;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-hr {color: #000;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-link {color: #00c;}
+.cm-s-func_mgr div:not(.cm-readonly)>pre .cm-error {color: #f00;}
+.cm-invalidchar {color: #f00;}
+
+.cm-s-func_mgr .cm-readonly span {color: #bbbbbb; font-weight:bold;}
+.cm-bookmark span {color: #bbbbbb;}
+
+.cm-s-func_mgr .cm-readonly .CodeMirror-linenumber{
+    color: #bbbbbb; font-weight:bold;
+}
+
+.cm-s-func_mgr .CodeMirror-linenumber{
+    color: #000000;
+}

@@ -1,0 +1,12 @@
+**/*upload/
+**/*log/
+**/*.ipynb_checkpoints/
+**/*.sqlite3
+**/*__pycache__
+**/*.git*
+**/*docker-workdir/
+
+env
+Makefile
+DeviceTalk-Basic-file
+DeviceTalk-Library-file

@@ -1,0 +1,20 @@
+[flake8]
+
+ignore =
+    # F722: Do not use bare except, specify exception instead
+    E722,
+    # W503: line break before binary operator
+    W503,
+    #F401
+
+exclude =
+    .git,
+    __pycache__,
+    .ipynb_checkpoints,
+    migrations,
+    upload,
+    DeviceTalk-Basic-file,
+    DeviceTalk-Library-file
+
+max-line-length = 92
+

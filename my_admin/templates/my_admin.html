@@ -1,0 +1,125 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>DeviceTalk Admin</title>
+    <link href="{% static 'css/device-talk.css' %}" rel="stylesheet" />
+  </head>
+
+  <body onload="init()">
+    {% csrf_token %}
+    <nav id="nav-ctx">
+      <div class="nav-container">
+        <div class="nav-inner">
+          <div><h1>Admin</h1></div>
+          <div>
+            {% if request.user.is_authenticated %}
+            Login as : {{ username }}
+            <span>
+              <a href="{% url "xtalk_account:logout_endpoint" %}"> Logout</a>
+            </span>
+            {% else %}
+            <span>
+              <a href="{% url "xtalk_account:auth_redirect_endpoint" %}"> Login</a>
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    {% if is_admin %}
+    {% verbatim %}
+    <div class="main-container" id="app">
+      <!-- modal -->
+      <div class="modal-container" v-show="file_upload_state.show">
+        <div class="modal-inner">
+          <h3>Files Upload</h3>
+          <table>
+            <tr v-for="(value, relativ_path) in file_upload_state.files">
+                <td>{{ relativ_path }}</td>
+                <td><progress-bar
+                      endpoint_prefix="../api/file/"
+                      :ref="'file-'+value.index"
+                      :file="value.file"
+                      :index="value.index"
+                      :uuid="value.uuid"
+                      @upload_completed="upload_next"
+                      @upload_fail="upload_fail">
+                    </progress-bar>
+                </td>
+            </tr>
+          </table>
+        </div>
+      </div> <!-- modal end-->
+      <div class="main-inner">
+        <div class="tab-ctx">
+          <div class="table-wrapper">
+            <table>
+              <tr>
+                <td>Language</td>
+                <td>
+                  <select v-model="language" v-on:change="language_change()">
+                    <option v-for="(language) in languages" :value='language'>{{ language }}</option>
+                  </select>
+                </td>
+                <td>
+                  <a class="text-button" @click="language_add()">Add</a>
+                </td>
+                <td>
+                  <a class="text-button" @click="language_delete()">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>Basic File</td>
+                <td>
+                  <select v-model="basicfile" v-on:change="basicfile_change()">
+                    <option value="-1" style="display:none;">(Please add new basic file)</option>
+                    <option v-for="(name, id) in basicfiles" :value='id'>{{ name }}</option>
+                  </select>
+                </td>
+                <td><a class="text-button" @click="add_basicfile()">Add</a>
+                    <input id="add-file" type="file" v-on:change="handleFiles($event, 'PUT')" webkitdirectory directory multiple style="display:none; visibility:hidden;" />
+                </td>
+                <td><a class="text-button" @click="delete_basicfile()">Delete</a></td>
+              </tr>
+              <tr>
+                <td>
+                    <button v-on:click="update_basicfile()" v-show="basicfile !== -1">Update Basic File</button>
+                    <input id="update-file" type="file" v-on:change="handleFiles($event, 'POST')" webkitdirectory directory multiple style="display:none; visibility:hidden;" />
+                </td>
+                <td colspan="3">
+                    <p v-for="file in files" v-on:dblclick="fileDbClick(file.uuid)">{{ file.file_path }}</p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <a href="../debug/">Django admin</a>
+      </div>
+    </div>
+    {% endverbatim %}
+    {% else %}
+    <div class="main-container" id="app">
+      <div class="main-inner">
+        <div>(Please login as admin)</div>
+      </div>
+    </div>
+    {% endif %}
+  </body>
+
+  {% if is_admin %}
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+  <script src="{% static 'js/progress_bar.js' %}"></script>
+  <script src="{% static 'js/utils.js' %}"></script>
+  <script src="{% static 'js/my_admin.js' %}"></script>
+  {% endif %}
+
+  <script>
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const _language = '{{ language|safe }}';
+    const _languages = {{ languages|safe }};
+  </script>
+</html>

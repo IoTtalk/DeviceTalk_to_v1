@@ -1,0 +1,14 @@
+django~=3.1
+Authlib~=0.15.3
+libgravatar~=1.0.0
+requests~=2.25.1
+swapper~=1.1.2
+django-sslserver
+Jinja2
+django-apscheduler
+
+# use dotenv to read config form .env
+python-dotenv>=0.21.0
+
+# Color text output
+colorama~=0.4.4

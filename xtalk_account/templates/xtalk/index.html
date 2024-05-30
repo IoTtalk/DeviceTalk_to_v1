@@ -1,0 +1,11 @@
+{% extends "./base_navbar.html" %}
+
+{% block title %}X-Talk Template{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated %}
+login
+{% else %}
+Please login
+{% endif %}
+{% endblock %}
